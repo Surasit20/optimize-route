@@ -146,7 +146,6 @@ class _MyHomePageState extends State<MyHomePage> {
       print(_tempMatrix);
     }
 
-    var dummyMatrix = matrixDistance;
     var minMatrix = matrixDistance;
     var tempIndex = [0];
     int index, min;
@@ -157,14 +156,14 @@ class _MyHomePageState extends State<MyHomePage> {
       minMatrix[count][count] = travelled;
       min = minMatrix[count].reduce((curr, next) => curr < next ? curr : next);
 
-      index = dummyMatrix[count].indexOf(min);
+      index = matrixDistance[count].indexOf(min);
 
       if (tempIndex.contains(index)) {
         minMatrix[count][index] = travelled;
         while (true) {
           min = minMatrix[count]
               .reduce((curr, next) => curr < next ? curr : next);
-          index = dummyMatrix.indexOf(min);
+          index = matrixDistance[count].indexOf(min);
           if (!tempIndex.contains(index)) {
             count = index;
             tempIndex.add(index);
