@@ -21,9 +21,9 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        primarySwatch: Colors.green,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const MyHomePage(title: 'Flutter Demo GPS saleman'),
     );
   }
 }
@@ -66,29 +66,63 @@ class _MyHomePageState extends State<MyHomePage> {
           onMapCreated: (controller) => _googleMapController = controller,
           markers: Set<Marker>.of(_listMarker),
           onTap: _addMarker,
+           /*polylines: {
+              if (distance != null)
+                Polyline(
+                  polylineId: const PolylineId('overview_polyline'),
+                  color: Colors.red,
+                  width: 5,
+                  points:  distance.polylinePoints.map((e) => LatLng(e.latitude, e.longitude))
+                      
+                      .toList(),
+                ),
+                
+            },*/
+           
         ),
-        Align(
-          alignment: Alignment.bottomLeft,
-          child: FloatingActionButton(
-            onPressed: matrixDistance,
+        
+        Padding(
+          padding: const EdgeInsets.fromLTRB(10, 0, 0, 100),
+          child: Align(
+            alignment: Alignment.bottomLeft,
+            child: FloatingActionButton(
+              
+              onPressed: matrixDistance,
+               backgroundColor: Colors.blueAccent,
+               child: const Icon(Icons.navigation),
+            ),
           ),
         ),
-      ]),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
+        Padding(
+          padding: const EdgeInsets.fromLTRB(10, 0, 0, 30),
+          child: Align(
+            alignment: Alignment.bottomLeft,
+            child: FloatingActionButton(
+              
+              onPressed: () {
           setState(() {
             _listMarker = [];
           });
-        },
-      ),
+          },
+               backgroundColor: Colors.red,
+               child: const Icon(Icons.clear_rounded),
+            ),
+          ),
+        ),
+      ]),
+
+     
     );
   }
- //sawad d cub
+ 
   void _addMarker(LatLng pos) {
     var markerIdVal = _listMarker.length + 1;
     String mar = markerIdVal.toString();
     final MarkerId markerId = MarkerId(mar);
-    final Marker marker = Marker(markerId: markerId, position: pos);
+    final Marker marker = Marker(markerId: markerId,
+    icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
+     position: pos);
+    
     setState(() {
       _listMarker.add(marker);
     });
