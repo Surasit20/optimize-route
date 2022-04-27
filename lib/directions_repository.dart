@@ -1,28 +1,29 @@
 import 'package:dio/dio.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:stp_map/.env.dart';
+import 'package:stp_map/model_directios.dart';
 
 class DirectionsRepository {
   static const String _baseUrl =
       'https://maps.googleapis.com/maps/api/directions/json?';
 
-  Future<dynamic> getDirections({
-    required LatLng origin,
-    required LatLng destination,
+  Future<Directions> getDirections({
+    required LatLng start,
+    required LatLng end,
   }) async {
     final response = await Dio().get(
       _baseUrl,
       queryParameters: {
-        'origin': '${origin.latitude},${origin.longitude}',
-        'destination': '${destination.latitude},${destination.longitude}',
+        'origin': '${start.latitude},${start.longitude}',
+        'destination': '${end.latitude},${end.longitude}',
         'key': googleAPIKey,
       },
     );
 
     // Check if response is successful
     if (response.statusCode == 200) {
-      return response.data;
+      return Directions.fromMap(response.data);
     }
-    return null;
+    return throw ArgumentError('Data is null');
   }
 }

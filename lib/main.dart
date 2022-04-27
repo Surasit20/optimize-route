@@ -1,12 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:geolocator/geolocator.dart';
-
 import 'package:stp_map/directions_repository.dart';
-import 'package:dio/dio.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 import 'dart:math';
+import 'package:stp_map/model_directios.dart';
 
 void main() {
   runApp(const MyApp());
@@ -70,7 +66,7 @@ class _MyHomePageState extends State<MyHomePage> {
         Align(
           alignment: Alignment.bottomLeft,
           child: FloatingActionButton(
-            onPressed: matrixDistance,
+            onPressed: optimizeRoute,
           ),
         ),
       ]),
@@ -94,63 +90,61 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  Future<Map> distance(Marker start, Marker end) async {
-    final data = await DirectionsRepository()
-        .getDirections(origin: start.position, destination: end.position);
+  Future<Directions> directions(Marker start, Marker end) async {
+    var data = await DirectionsRepository()
+        .getDirections(start: start.position, end: end.position);
 
-    var routes = data["routes"];
-    routes = routes[0];
-    var legs = routes["legs"];
-    var distance = legs[0];
-    return distance["distance"];
+    return data;
   }
 
-  Future<void> matrixDistance() async {
-    final _matrix = [];
+  Future<void> optimizeRoute() async {
+    var matrixDistance = [];
     final n = _listMarker.length;
-
     var temp;
+
+    //create matrix distance
     for (int i = 0; i < n; i++) {
       List _tempMatrix = [];
       for (int j = 0; j < n; j++) {
-        temp = await distance(_listMarker[i], _listMarker[j]);
-        _tempMatrix.add(temp["value"]);
+        temp = await directions(_listMarker[i], _listMarker[j]);
+        _tempMatrix.add(temp!.valDistance);
       }
-      _matrix.add(_tempMatrix);
+      matrixDistance.add(_tempMatrix);
       print(_tempMatrix);
     }
 
-    var dummy = _matrix;
-    final row = _matrix;
-
-    final tempIndex = [0];
-    var _index, _min;
-    int count = 0;
-
+    var dummyMatrix = matrixDistance;
+    var minMatrix = matrixDistance;
+    var tempIndex = [0];
+    int index, min;
+    var total = 0;
+    var count = 0;
+    final travelled = pow(10, 10);
     for (int i = 0; i < n - 1; i++) {
-      final rowmatrix = row[count];
-      rowmatrix[count] = 9999999999999;
-      List dummyMatrix = dummy[count];
+      minMatrix[count][count] = travelled;
+      min = minMatrix[count].reduce((curr, next) => curr < next ? curr : next);
 
-      _min = rowmatrix.reduce((curr, next) => curr < next ? curr : next);
-      _index = dummyMatrix.indexOf(_min);
+      index = dummyMatrix[count].indexOf(min);
 
-      if (tempIndex.contains(_index)) {
-        rowmatrix[_index] = 9999999999999;
+      if (tempIndex.contains(index)) {
+        minMatrix[count][index] = travelled;
         while (true) {
-          _min = rowmatrix.reduce((curr, next) => curr < next ? curr : next);
-          _index = dummyMatrix.indexOf(_min);
-          if (!tempIndex.contains(_index)) {
-            count = _index;
-            tempIndex.add(_index);
+          min = minMatrix[count]
+              .reduce((curr, next) => curr < next ? curr : next);
+          index = dummyMatrix.indexOf(min);
+          if (!tempIndex.contains(index)) {
+            count = index;
+            tempIndex.add(index);
+            total = total + min;
             break;
           } else {
-            rowmatrix[_index] = 9999999999999;
+            minMatrix[count][index] = travelled;
           }
         }
       } else {
-        count = _index;
-        tempIndex.add(_index);
+        count = index;
+        tempIndex.add(index);
+        total = total + min;
       }
     }
 
@@ -160,5 +154,6 @@ class _MyHomePageState extends State<MyHomePage> {
     }
     travelling += " 0";
     print(travelling);
+    print(total);
   }
 }
