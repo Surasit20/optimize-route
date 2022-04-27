@@ -118,6 +118,7 @@ class _MyHomePageState extends State<MyHomePage> {
       }
       _matrix.add(_tempMatrix);
       print(_tempMatrix);
+      print(_tempMatrix);
     }
 
     var dummy = _matrix;
