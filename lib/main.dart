@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:stp_map/ModelMatrix.dart';
 import 'package:stp_map/model_directios.dart';
-import 'package:stp_map/directions_repository.dart';
+import 'package:stp_map/Directions_repository.dart';
 import 'package:dio/dio.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -41,7 +42,6 @@ class _MyHomePageState extends State<MyHomePage> {
       target: LatLng(13.875119978758672, 100.5693624445351), zoom: 15);
 
   late GoogleMapController _googleMapController;
-
   List<Marker> _listMarker = [];
 
   @override
@@ -146,32 +146,34 @@ class _MyHomePageState extends State<MyHomePage> {
       print(_tempMatrix);
     }
 
-    var dummyMatrix = matrixDistance;
-    var minMatrix = matrixDistance;
+    var dummymatrix = [...matrixDistance];
+    var minMatrix = [...dummymatrix];
     var tempIndex = [0];
     int index, min;
     var total = 0;
     var count = 0;
-    final travelled = pow(10, 10);
-    for (int i = 0; i < n - 1; i++) {
-      minMatrix[count][count] = travelled;
-      min = minMatrix[count].reduce((curr, next) => curr < next ? curr : next);
 
-      index = dummyMatrix[count].indexOf(min);
+    //find bast path route
+    for (int i = 0; i < n - 1; i++) {
+      minMatrix[count].sort();
+      min = minMatrix[count][1];
+
+      print(minMatrix[count]);
+      print(dummymatrix[count]);
+      index = dummymatrix[count].indexOf(min);
 
       if (tempIndex.contains(index)) {
-        minMatrix[count][index] = travelled;
+        var sortIndex = 2;
         while (true) {
-          min = minMatrix[count]
-              .reduce((curr, next) => curr < next ? curr : next);
-          index = dummyMatrix.indexOf(min);
+          min = minMatrix[count][sortIndex];
+          index = dummymatrix.indexOf(min);
           if (!tempIndex.contains(index)) {
             count = index;
             tempIndex.add(index);
             total = total + min;
             break;
           } else {
-            minMatrix[count][index] = travelled;
+            sortIndex += 1;
           }
         }
       } else {

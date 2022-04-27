@@ -89,11 +89,7 @@ packages:
       name: flutter_polyline_points
       url: "https://pub.dartlang.org"
     source: hosted
-<<<<<<< HEAD
     version: "1.0.0"
-=======
-    version: "0.2.6"
->>>>>>> c7f0c3b391718b1bd677ef6f956a7ace255ba374
   flutter_test:
     dependency: "direct dev"
     description: flutter
@@ -228,6 +224,13 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.99"
+  sorted:
+    dependency: "direct main"
+    description:
+      name: sorted
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.0.0+1"
   source_span:
     dependency: transitive
     description:
