@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:stp_map/directions_repository.dart';
-import 'dart:math';
+import 'package:geolocator/geolocator.dart';
 import 'package:stp_map/model_directios.dart';
+import 'package:stp_map/directions_repository.dart';
+import 'package:dio/dio.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'dart:math';
 
 void main() {
   runApp(const MyApp());
@@ -17,9 +21,9 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        primarySwatch: Colors.green,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const MyHomePage(title: 'Flutter Demo GPS saleman'),
     );
   }
 }
@@ -62,21 +66,46 @@ class _MyHomePageState extends State<MyHomePage> {
           onMapCreated: (controller) => _googleMapController = controller,
           markers: Set<Marker>.of(_listMarker),
           onTap: _addMarker,
+          /*polylines: {
+              if (distance != null)
+                Polyline(
+                  polylineId: const PolylineId('overview_polyline'),
+                  color: Colors.red,
+                  width: 5,
+                  points:  distance.polylinePoints.map((e) => LatLng(e.latitude, e.longitude))
+                      
+                      .toList(),
+                ),
+                
+            },*/
         ),
-        Align(
-          alignment: Alignment.bottomLeft,
-          child: FloatingActionButton(
-            onPressed: optimizeRoute,
+        Padding(
+          padding: const EdgeInsets.fromLTRB(10, 0, 0, 100),
+          child: Align(
+            alignment: Alignment.bottomLeft,
+            child: FloatingActionButton(
+              onPressed: optimizeRoute,
+              backgroundColor: Colors.blueAccent,
+              child: const Icon(Icons.navigation),
+            ),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(10, 0, 0, 30),
+          child: Align(
+            alignment: Alignment.bottomLeft,
+            child: FloatingActionButton(
+              onPressed: () {
+                setState(() {
+                  _listMarker = [];
+                });
+              },
+              backgroundColor: Colors.red,
+              child: const Icon(Icons.clear_rounded),
+            ),
           ),
         ),
       ]),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          setState(() {
-            _listMarker = [];
-          });
-        },
-      ),
     );
   }
 
@@ -84,7 +113,11 @@ class _MyHomePageState extends State<MyHomePage> {
     var markerIdVal = _listMarker.length + 1;
     String mar = markerIdVal.toString();
     final MarkerId markerId = MarkerId(mar);
-    final Marker marker = Marker(markerId: markerId, position: pos);
+    final Marker marker = Marker(
+        markerId: markerId,
+        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
+        position: pos);
+
     setState(() {
       _listMarker.add(marker);
     });
