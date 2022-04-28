@@ -1,12 +1,11 @@
+// ignore_for_file: prefer_typing_uninitialized_variables
+
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:stp_map/model_directios.dart';
 import 'package:stp_map/directions_repository.dart';
-import 'package:dio/dio.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 import 'dart:math';
+import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 
 void main() {
   runApp(const MyApp());
@@ -43,7 +42,10 @@ class _MyHomePageState extends State<MyHomePage> {
   late GoogleMapController _googleMapController;
 
   List<Marker> _listMarker = [];
-
+  List<Directions>? _info;
+  Set<Polyline> _polylines = {};
+  List<Directions> _allPath = [];
+  final a = 2;
   @override
   void dispose() {
     _googleMapController.dispose();
@@ -66,25 +68,14 @@ class _MyHomePageState extends State<MyHomePage> {
           onMapCreated: (controller) => _googleMapController = controller,
           markers: Set<Marker>.of(_listMarker),
           onTap: _addMarker,
-          /*polylines: {
-              if (distance != null)
-                Polyline(
-                  polylineId: const PolylineId('overview_polyline'),
-                  color: Colors.red,
-                  width: 5,
-                  points:  distance.polylinePoints.map((e) => LatLng(e.latitude, e.longitude))
-                      
-                      .toList(),
-                ),
-                
-            },*/
+          polylines: Set<Polyline>.of(_polylines),
         ),
         Padding(
           padding: const EdgeInsets.fromLTRB(10, 0, 0, 100),
           child: Align(
             alignment: Alignment.bottomLeft,
             child: FloatingActionButton(
-              onPressed: optimizeRoute,
+              onPressed: cratePolyline,
               backgroundColor: Colors.blueAccent,
               child: const Icon(Icons.navigation),
             ),
@@ -98,6 +89,7 @@ class _MyHomePageState extends State<MyHomePage> {
               onPressed: () {
                 setState(() {
                   _listMarker = [];
+                  _polylines = {};
                 });
               },
               backgroundColor: Colors.red,
@@ -124,26 +116,51 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<Directions> directions(Marker start, Marker end) async {
-    var data = await DirectionsRepository()
+    Directions data = await DirectionsRepository()
         .getDirections(start: start.position, end: end.position);
 
     return data;
   }
 
-  Future<void> optimizeRoute() async {
+  Future<void> cratePolyline() async {
+    dynamic data = await optimizeRoute();
+    List indexSort = data["sortpathindex"];
+    List listpolyline = data["allpath"];
+    Polyline polyline;
+    Set<Polyline> tempPolylines = {};
+    int prv = 0;
+    for (int i = 0, j = 1; j < indexSort.length; i++, j++) {
+      List<PointLatLng> test = listpolyline[indexSort[i]][indexSort[j]];
+
+      polyline = Polyline(
+          polylineId: PolylineId("poly $i"),
+          color: Color.fromARGB(204, 147, 70, 140),
+          width: 6,
+          points: test.map((e) => LatLng(e.latitude, e.longitude)).toList());
+      setState(() {
+        _polylines.add(polyline);
+      });
+    }
+  }
+
+  Future<dynamic> optimizeRoute() async {
     var matrixDistance = [];
+    var tempAllPath = [];
     final n = _listMarker.length;
-    var temp;
+    Directions temp;
+    List<PointLatLng> sd;
 
     //create matrix distance
     for (int i = 0; i < n; i++) {
-      List _tempMatrix = [];
+      List tempMatrix_ = [];
+      List tempAllPath_ = [];
       for (int j = 0; j < n; j++) {
         temp = await directions(_listMarker[i], _listMarker[j]);
-        _tempMatrix.add(temp!.valDistance);
+        tempMatrix_.add(temp.valDistance);
+        tempAllPath_.add(temp.polylinePoints);
       }
-      matrixDistance.add(_tempMatrix);
-      print(_tempMatrix);
+      matrixDistance.add(tempMatrix_);
+      tempAllPath.add(tempAllPath_);
     }
 
     var minMatrix = matrixDistance;
@@ -187,5 +204,12 @@ class _MyHomePageState extends State<MyHomePage> {
     travelling += " 0";
     print(travelling);
     print(total);
+
+    dynamic databestpath = {
+      "total": total,
+      "sortpathindex": tempIndex,
+      "allpath": tempAllPath
+    };
+    return databestpath;
   }
 }
