@@ -45,7 +45,12 @@ class _MyHomePageState extends State<MyHomePage> {
   List<Directions>? _info;
   Set<Polyline> _polylines = {};
   List<Directions> _allPath = [];
+  
   final a = 2;
+
+  late int total = 0;
+  
+  
   @override
   void dispose() {
     _googleMapController.dispose();
@@ -61,6 +66,7 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Text(widget.title),
       ),
       body: Stack(children: [
+        
         GoogleMap(
           initialCameraPosition: _initalCareraPosition,
           myLocationEnabled: true,
@@ -70,6 +76,7 @@ class _MyHomePageState extends State<MyHomePage> {
           onTap: _addMarker,
           polylines: Set<Polyline>.of(_polylines),
         ),
+        
         Padding(
           padding: const EdgeInsets.fromLTRB(10, 0, 0, 100),
           child: Align(
@@ -89,7 +96,8 @@ class _MyHomePageState extends State<MyHomePage> {
               onPressed: () {
                 setState(() {
                   _listMarker = [];
-                  _polylines = {};
+                  _polylines = {};  
+                  total = 0;
                 });
               },
               backgroundColor: Colors.red,
@@ -97,7 +105,35 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
           ),
         ),
-      ]),
+         Padding(
+           padding: const EdgeInsets.only(top:10),
+           child: Align(
+        alignment: Alignment.topCenter,
+        child: Container(
+            width: 250.0,
+            height: 50.0,
+            decoration: const BoxDecoration(
+              color: Color.fromARGB(255, 5, 58, 7),
+              shape: BoxShape.rectangle,
+              borderRadius: BorderRadius.all(Radius.circular(20.0)),
+            ),
+            child: Align(
+              alignment: Alignment.center,
+              
+                child: Text(
+                  'ระยะทาง : ${total / 1000} กิโลเมตร',
+                  style: const TextStyle(
+                    fontSize: 20.0,
+                  
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+        ),
+      ),
+         
+        ]),
     );
   }
 
@@ -106,8 +142,9 @@ class _MyHomePageState extends State<MyHomePage> {
     String mar = markerIdVal.toString();
     final MarkerId markerId = MarkerId(mar);
     final Marker marker = Marker(
+        
         markerId: markerId,
-        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
+        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange),
         position: pos);
 
     setState(() {
@@ -126,7 +163,10 @@ class _MyHomePageState extends State<MyHomePage> {
     dynamic data = await optimizeRoute();
     List indexSort = data["sortpathindex"];
     List listpolyline = data["allpath"];
-
+    
+    setState(() {
+       total = data["total"];
+    });
     Polyline polyline;
     Set<Polyline> tempPolylines = {};
     int prv = 0;
@@ -159,6 +199,7 @@ class _MyHomePageState extends State<MyHomePage> {
         temp = await directions(_listMarker[i], _listMarker[j]);
         tempMatrix_.add(temp.valDistance);
         tempAllPath_.add(temp.polylinePoints);
+        print(' ระยะทาง ${temp.textDistance}');
       }
       matrixDistance.add(tempMatrix_);
       tempAllPath.add(tempAllPath_);
@@ -204,7 +245,7 @@ class _MyHomePageState extends State<MyHomePage> {
     }
     travelling += " 0";
     print(travelling);
-    print(total);
+    print(total / 1000);
 
     dynamic databestpath = {
       "total": total,
