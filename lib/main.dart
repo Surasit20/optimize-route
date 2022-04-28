@@ -126,6 +126,7 @@ class _MyHomePageState extends State<MyHomePage> {
     dynamic data = await optimizeRoute();
     List indexSort = data["sortpathindex"];
     List listpolyline = data["allpath"];
+
     Polyline polyline;
     Set<Polyline> tempPolylines = {};
     int prv = 0;
