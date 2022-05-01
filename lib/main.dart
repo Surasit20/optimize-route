@@ -1,3 +1,4 @@
+import 'dart:ffi';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:stp_map/model_directios.dart';
@@ -46,9 +47,8 @@ class _MyHomePageState extends State<MyHomePage> {
   Set<Marker> _setMarker = {};
   List<Marker> _listMarker = [];
   final a = 2;
-
+  int tempIndex = 0;
   late int total = 0;
-
   @override
   void dispose() {
     _googleMapController.dispose();
@@ -119,7 +119,32 @@ class _MyHomePageState extends State<MyHomePage> {
                 child: Text(
                   'ระยะทาง : ${total / 1000} กิโลเมตร',
                   style: const TextStyle(
-                    fontSize: 20.0,
+                    fontSize: 17.0,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(top: 75),
+          child: Align(
+            alignment: Alignment.topCenter,
+            child: Container(
+              width: 250.0,
+              height: 50.0,
+              decoration: const BoxDecoration(
+                color: Color.fromARGB(255, 5, 58, 7),
+                shape: BoxShape.rectangle,
+                borderRadius: BorderRadius.all(Radius.circular(20.0)),
+              ),
+              child: Align(
+                alignment: Alignment.center,
+                child: Text(
+                  'เส้นทางที่ควรไป : ${tempIndex} ',
+                  style: const TextStyle(
+                    fontSize: 17.0,
                     color: Colors.white,
                   ),
                 ),
@@ -224,6 +249,8 @@ class _MyHomePageState extends State<MyHomePage> {
     var tempAllPath = [];
     final n = _listMarker.length;
     Directions temp;
+    List<PointLatLng> sd;
+
     //create matrix distance
     for (int i = 0; i < n; i++) {
       List tempMatrix_ = [];
@@ -266,6 +293,10 @@ class _MyHomePageState extends State<MyHomePage> {
         total = total + min;
       }
     }
+    setState(() {
+      tempIndex = tempIndex;
+    });
+
     String travelling = "";
     for (int i = 0; i < n; i++) {
       travelling += "${tempIndex[i]} -> ";
@@ -277,7 +308,8 @@ class _MyHomePageState extends State<MyHomePage> {
     dynamic databestpath = {
       "total": total,
       "sortpathindex": tempIndex,
-      "allpath": tempAllPath
+      "allpath": tempAllPath,
+      "tempIndex": tempIndex,
     };
     return databestpath;
   }
