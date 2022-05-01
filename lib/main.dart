@@ -1,11 +1,10 @@
-// ignore_for_file: prefer_typing_uninitialized_variables
-
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:stp_map/model_directios.dart';
 import 'package:stp_map/directions_repository.dart';
 import 'dart:math';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
+import 'package:label_marker/label_marker.dart';
 
 void main() {
   runApp(const MyApp());
@@ -41,16 +40,15 @@ class _MyHomePageState extends State<MyHomePage> {
 
   late GoogleMapController _googleMapController;
 
-  List<Marker> _listMarker = [];
   List<Directions>? _info;
   Set<Polyline> _polylines = {};
   List<Directions> _allPath = [];
-  
+  Set<Marker> _setMarker = {};
+  List<Marker> _listMarker = [];
   final a = 2;
 
   late int total = 0;
-  
-  
+
   @override
   void dispose() {
     _googleMapController.dispose();
@@ -66,17 +64,15 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Text(widget.title),
       ),
       body: Stack(children: [
-        
         GoogleMap(
           initialCameraPosition: _initalCareraPosition,
           myLocationEnabled: true,
           zoomControlsEnabled: true,
           onMapCreated: (controller) => _googleMapController = controller,
-          markers: Set<Marker>.of(_listMarker),
+          markers: Set<Marker>.of(_setMarker),
           onTap: _addMarker,
           polylines: Set<Polyline>.of(_polylines),
         ),
-        
         Padding(
           padding: const EdgeInsets.fromLTRB(10, 0, 0, 100),
           child: Align(
@@ -96,8 +92,9 @@ class _MyHomePageState extends State<MyHomePage> {
               onPressed: () {
                 setState(() {
                   _listMarker = [];
-                  _polylines = {};  
+                  _polylines = {};
                   total = 0;
+                  _setMarker = {};
                 });
               },
               backgroundColor: Colors.red,
@@ -105,50 +102,48 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
           ),
         ),
-         Padding(
-           padding: const EdgeInsets.only(top:10),
-           child: Align(
-        alignment: Alignment.topCenter,
-        child: Container(
-            width: 250.0,
-            height: 50.0,
-            decoration: const BoxDecoration(
-              color: Color.fromARGB(255, 5, 58, 7),
-              shape: BoxShape.rectangle,
-              borderRadius: BorderRadius.all(Radius.circular(20.0)),
-            ),
-            child: Align(
-              alignment: Alignment.center,
-              
+        Padding(
+          padding: const EdgeInsets.only(top: 10),
+          child: Align(
+            alignment: Alignment.topCenter,
+            child: Container(
+              width: 250.0,
+              height: 50.0,
+              decoration: const BoxDecoration(
+                color: Color.fromARGB(255, 5, 58, 7),
+                shape: BoxShape.rectangle,
+                borderRadius: BorderRadius.all(Radius.circular(20.0)),
+              ),
+              child: Align(
+                alignment: Alignment.center,
                 child: Text(
                   'ระยะทาง : ${total / 1000} กิโลเมตร',
                   style: const TextStyle(
                     fontSize: 20.0,
-                  
                     color: Colors.white,
                   ),
                 ),
               ),
             ),
+          ),
         ),
-      ),
-         
-        ]),
+      ]),
     );
   }
 
   void _addMarker(LatLng pos) {
     var markerIdVal = _listMarker.length + 1;
+    print(markerIdVal);
     String mar = markerIdVal.toString();
     final MarkerId markerId = MarkerId(mar);
     final Marker marker = Marker(
-        
         markerId: markerId,
         icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange),
         position: pos);
 
     setState(() {
       _listMarker.add(marker);
+      _setMarker.add(marker);
     });
   }
 
@@ -163,34 +158,72 @@ class _MyHomePageState extends State<MyHomePage> {
     dynamic data = await optimizeRoute();
     List indexSort = data["sortpathindex"];
     List listpolyline = data["allpath"];
-    
+
     setState(() {
-       total = data["total"];
+      total = data["total"];
     });
     Polyline polyline;
     Set<Polyline> tempPolylines = {};
     int prv = 0;
-    for (int i = 0, j = 1; j < indexSort.length; i++, j++) {
-      List<PointLatLng> test = listpolyline[indexSort[i]][indexSort[j]];
 
+    for (int i = 0; i < indexSort.length - 1; i++) {
+      if (i == indexSort.length - 2) {
+        print("hello");
+        List<PointLatLng> test = listpolyline[indexSort[i]][indexSort[i + 1]];
+        polyline = Polyline(
+            polylineId: PolylineId("poly $i"),
+            color: Color.fromARGB(204, 147, 70, 140),
+            width: 6,
+            points: test.map((e) => LatLng(e.latitude, e.longitude)).toList());
+
+        setState(() {
+          _polylines.add(polyline);
+          _setMarker.addLabelMarker(LabelMarker(
+            label: "${i + 1}",
+            markerId: MarkerId("idString $i"),
+            position: LatLng(_listMarker[indexSort[i]].position.latitude,
+                _listMarker[indexSort[i]].position.longitude),
+            backgroundColor: Colors.green,
+          ));
+
+          _setMarker.addLabelMarker(LabelMarker(
+            label: "${i + 2}",
+            markerId: MarkerId("idString $i+1"),
+            position: LatLng(_listMarker[indexSort[i + 1]].position.latitude,
+                _listMarker[indexSort[i + 1]].position.longitude),
+            backgroundColor: Colors.green,
+          ));
+        });
+
+        break;
+      }
+      print("hello0");
+      List<PointLatLng> test = listpolyline[indexSort[i]][indexSort[i + 1]];
       polyline = Polyline(
           polylineId: PolylineId("poly $i"),
           color: Color.fromARGB(204, 147, 70, 140),
           width: 6,
           points: test.map((e) => LatLng(e.latitude, e.longitude)).toList());
+
       setState(() {
         _polylines.add(polyline);
+        _setMarker.addLabelMarker(LabelMarker(
+          label: "${i + 1}",
+          markerId: MarkerId("idString $i"),
+          position: LatLng(_listMarker[indexSort[i]].position.latitude,
+              _listMarker[indexSort[i]].position.longitude),
+          backgroundColor: Colors.green,
+        ));
       });
     }
   }
 
   Future<dynamic> optimizeRoute() async {
     var matrixDistance = [];
+    var dummyDistance = [];
     var tempAllPath = [];
     final n = _listMarker.length;
     Directions temp;
-    List<PointLatLng> sd;
-
     //create matrix distance
     for (int i = 0; i < n; i++) {
       List tempMatrix_ = [];
@@ -199,29 +232,24 @@ class _MyHomePageState extends State<MyHomePage> {
         temp = await directions(_listMarker[i], _listMarker[j]);
         tempMatrix_.add(temp.valDistance);
         tempAllPath_.add(temp.polylinePoints);
-        print(' ระยะทาง ${temp.textDistance}');
       }
       matrixDistance.add(tempMatrix_);
+      dummyDistance.add(tempMatrix_.toList());
       tempAllPath.add(tempAllPath_);
     }
-
-    var minMatrix = matrixDistance;
     var tempIndex = [0];
     int index, min;
     var total = 0;
     var count = 0;
-    final travelled = pow(10, 10);
+
     for (int i = 0; i < n - 1; i++) {
-      minMatrix[count][count] = travelled;
-      min = minMatrix[count].reduce((curr, next) => curr < next ? curr : next);
-
+      dummyDistance[count].sort();
+      min = dummyDistance[count][1];
       index = matrixDistance[count].indexOf(min);
-
       if (tempIndex.contains(index)) {
-        minMatrix[count][index] = travelled;
+        int sortIndex = 2;
         while (true) {
-          min = minMatrix[count]
-              .reduce((curr, next) => curr < next ? curr : next);
+          min = dummyDistance[count][sortIndex];
           index = matrixDistance[count].indexOf(min);
           if (!tempIndex.contains(index)) {
             count = index;
@@ -229,7 +257,7 @@ class _MyHomePageState extends State<MyHomePage> {
             total = total + min;
             break;
           } else {
-            minMatrix[count][index] = travelled;
+            sortIndex += 1;
           }
         }
       } else {
@@ -238,7 +266,6 @@ class _MyHomePageState extends State<MyHomePage> {
         total = total + min;
       }
     }
-
     String travelling = "";
     for (int i = 0; i < n; i++) {
       travelling += "${tempIndex[i]} -> ";
