@@ -191,7 +191,7 @@ class _MyHomePageState extends State<MyHomePage> {
     Polyline polyline;
     Set<Polyline> tempPolylines = {};
     int prv = 0;
-
+    Set<Marker> testp = {};
     for (int i = 0; i < indexSort.length - 1; i++) {
       if (i == indexSort.length - 2) {
         print("hello");
@@ -204,7 +204,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
         setState(() {
           _polylines.add(polyline);
-          _setMarker.addLabelMarker(LabelMarker(
+          testp.addLabelMarker(LabelMarker(
             label: "${i + 1}",
             markerId: MarkerId("idString $i"),
             position: LatLng(_listMarker[indexSort[i]].position.latitude,
@@ -212,7 +212,7 @@ class _MyHomePageState extends State<MyHomePage> {
             backgroundColor: Colors.green,
           ));
 
-          _setMarker.addLabelMarker(LabelMarker(
+          testp.addLabelMarker(LabelMarker(
             label: "${i + 2}",
             markerId: MarkerId("idString $i+1"),
             position: LatLng(_listMarker[indexSort[i + 1]].position.latitude,
@@ -223,7 +223,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
         break;
       }
-      print("hello0");
+
       List<PointLatLng> test = listpolyline[indexSort[i]][indexSort[i + 1]];
       polyline = Polyline(
           polylineId: PolylineId("poly $i"),
@@ -233,7 +233,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
       setState(() {
         _polylines.add(polyline);
-        _setMarker.addLabelMarker(LabelMarker(
+        testp.addLabelMarker(LabelMarker(
           label: "${i + 1}",
           markerId: MarkerId("idString $i"),
           position: LatLng(_listMarker[indexSort[i]].position.latitude,
@@ -242,6 +242,10 @@ class _MyHomePageState extends State<MyHomePage> {
         ));
       });
     }
+
+    setState(() {
+      _setMarker = testp;
+    });
   }
 
   Future<dynamic> optimizeRoute() async {
